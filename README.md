@@ -1,73 +1,83 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="200" alt="Nest Logo" /></a>
-</p>
+## Инструкция по запуску бекенда
 
-[circleci-image]: https://img.shields.io/circleci/build/github/nestjs/nest/master?token=abc123def456
-[circleci-url]: https://circleci.com/gh/nestjs/nest
+Использовалась Ubuntu 22.04.4 LTS
 
-  <p align="center">A progressive <a href="http://nodejs.org" target="_blank">Node.js</a> framework for building efficient and scalable server-side applications.</p>
-    <p align="center">
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/v/@nestjs/core.svg" alt="NPM Version" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/l/@nestjs/core.svg" alt="Package License" /></a>
-<a href="https://www.npmjs.com/~nestjscore" target="_blank"><img src="https://img.shields.io/npm/dm/@nestjs/common.svg" alt="NPM Downloads" /></a>
-<a href="https://circleci.com/gh/nestjs/nest" target="_blank"><img src="https://img.shields.io/circleci/build/github/nestjs/nest/master" alt="CircleCI" /></a>
-<a href="https://coveralls.io/github/nestjs/nest?branch=master" target="_blank"><img src="https://coveralls.io/repos/github/nestjs/nest/badge.svg?branch=master#9" alt="Coverage" /></a>
-<a href="https://discord.gg/G7Qnnhy" target="_blank"><img src="https://img.shields.io/badge/discord-online-brightgreen.svg" alt="Discord"/></a>
-<a href="https://opencollective.com/nest#backer" target="_blank"><img src="https://opencollective.com/nest/backers/badge.svg" alt="Backers on Open Collective" /></a>
-<a href="https://opencollective.com/nest#sponsor" target="_blank"><img src="https://opencollective.com/nest/sponsors/badge.svg" alt="Sponsors on Open Collective" /></a>
-  <a href="https://paypal.me/kamilmysliwiec" target="_blank"><img src="https://img.shields.io/badge/Donate-PayPal-ff3f59.svg"/></a>
-    <a href="https://opencollective.com/nest#sponsor"  target="_blank"><img src="https://img.shields.io/badge/Support%20us-Open%20Collective-41B883.svg" alt="Support us"></a>
-  <a href="https://twitter.com/nestframework" target="_blank"><img src="https://img.shields.io/twitter/follow/nestframework.svg?style=social&label=Follow"></a>
-</p>
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+### 1. Скачать этот репозиторий
 
-## Description
+    git clone https://github.com/Range18/atomic-Hack2.0.git
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
+### 2. Прописать переменные окружения в .env
 
-## Installation
+- Переименовать .env.example в .env
+- Следовать комментариям в .env
 
-```bash
-$ yarn install
-```
+### 3. Установка Nginx
 
-## Running the app
+Устаноку reverse-proxy можно произвести по гайду ниже:
+https://nginx.org/ru/linux_packages.html#Ubuntu
+
+### 4. Настройка Nginx
+
+Создать в директории /путь до nginx/nginx/conf.d файл _домен_.conf
+
+В этот файл вставить конфиг, который находится по этой ссылке:
+https://github.com/Range18/atomic-Hack2.0/blob/main/example.com.conf
+
+При этом надо изменить:
+
+- _example.com_  на название используемого домена
+
+### 5. Установка SSL сертификатов
 
 ```bash
-# development
-$ yarn run start
+# Установка certbot
+$ sudo apt install certbot python3-certbot-nginx
 
-# watch mode
-$ yarn run start:dev
+# Проверка конфигов
+$ sudo nginx -t
 
-# production mode
-$ yarn run start:prod
+# Перезапуск
+$ sudo systemctl reload nginx
+
+# Донастройка Nginx
+$ sudo ufw status
+
+$ sudo ufw allow 'Nginx Full'
+$ sudo ufw delete allow 'Nginx HTTP'
+
+# Вместо example.com - имя вашего домена
+$ sudo certbot --nginx -d example.com -d www.example.com
+
+# Перезапуск
+$ sudo systemctl reload nginx
 ```
 
-## Test
+### 6. Установка MySQL
+
+https://selectel.ru/blog/ubuntu-mysql-install/
+
+### 7. Установка Node.js
 
 ```bash
-# unit tests
-$ yarn run test
-
-# e2e tests
-$ yarn run test:e2e
-
-# test coverage
-$ yarn run test:cov
+$ sudo apt install nodejs
+$ sudo apt install npm
 ```
 
-## Support
+### 8. Установка зависимостей
 
-Nest is an MIT-licensed open source project. It can grow thanks to the sponsors and support by the amazing backers. If you'd like to join them, please [read more here](https://docs.nestjs.com/support).
+```bash
+$ npm install
+```
 
-## Stay in touch
+### 9. Запуск
 
-- Author - [Kamil Myśliwiec](https://kamilmysliwiec.com)
-- Website - [https://nestjs.com](https://nestjs.com/)
-- Twitter - [@nestframework](https://twitter.com/nestframework)
+```bash
+# для запуска в продакшн
+$ npm run start:prod
 
-## License
+# для отладки
+$ npm run start
 
-Nest is [MIT licensed](LICENSE).
+# для отладки с автоматическим перезапуском
+$ npm run start:dev
+```
