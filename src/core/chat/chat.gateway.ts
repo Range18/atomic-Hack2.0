@@ -65,11 +65,12 @@ export class ChatGateway {
     client.to(data.authorId).emit('receiveMessage', new GetMessageRdo(message));
 
     if (data.isQuestion) {
-      console.log(issue.messages);
       const issueMessages =
         issue.messages && issue.messages.length > 0
           ? [...issue.messages, message]
           : [message];
+
+      console.log(issueMessages);
 
       const context = issueMessages.map(
         (message) =>
@@ -79,8 +80,13 @@ export class ChatGateway {
           ),
       );
 
-      const answerFromAI =
-        await this.fileService.getInstructionsFromFiles(context);
+      const sendLastOrContext = context.reduce((prev, currentValue) => {
+        return prev + currentValue.role == 'user' ? 1 : -1;
+      }, 0);
+
+      const answerFromAI = await this.fileService.getInstructionsFromFiles(
+        sendLastOrContext > 1 ? [context.at(-1)] : context,
+      );
 
       const isAnswer = !answerFromAI.instructions.every((answer) =>
         answer.text.toLowerCase().includes('нет фрагмента'),
@@ -110,6 +116,10 @@ export class ChatGateway {
             ? withPageAndLink.map((msg) => msg.filename).join('$')
             : undefined,
         isQuestion: false,
+        documentOriginalNames:
+          isAnswer && withPageAndLink.length > 0
+            ? withPageAndLink.map((msg) => msg.originalName).join('$')
+            : undefined,
       });
 
       const msg = await this.messageService.findOne({

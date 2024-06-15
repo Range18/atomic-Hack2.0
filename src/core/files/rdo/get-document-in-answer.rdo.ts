@@ -1,5 +1,7 @@
 export class GetDocumentInAnswerRdo {
-  fileLink: string;
+  readonly title: string;
 
-  page: number;
+  readonly fileLink: string;
+
+  readonly page: number;
 }

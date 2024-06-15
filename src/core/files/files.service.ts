@@ -116,6 +116,34 @@ export class FilesService extends BaseEntityService<File> {
             process.on('exit', resolve);
           });
 
+          //find page number in title of PDF instructions
+          if (!page) {
+            const titleWords = instruction.title.split(' ');
+            const command = `rga -U "(?s)${titleWords.slice(0, titleWords.length < 10 ? titleWords.length : 10).join('.*')}" ${join('/home/helper', storageConfig.path, file.name)}`;
+
+            const process = child_process.spawn(command, { shell: true });
+
+            process.on('spawn', () => console.log('spawned:', command));
+
+            process.stdout.on('data', (message) => {
+              const match = message.toString().match(regexToParsePageNumber);
+
+              // console.log(message.toString());
+
+              if (match) {
+                page = Number(match[1]);
+              }
+            });
+
+            process.on('error', (err) => {
+              console.log('Error during finding file page:', err);
+            });
+
+            await new Promise((resolve) => {
+              process.on('exit', resolve);
+            });
+          }
+
           return new InstructionRdo(
             instruction.filename,
             instruction.title,

@@ -34,4 +34,7 @@ export class Message extends BaseEntity {
 
   @Column({ nullable: true })
   document?: string;
+
+  @Column({ type: 'longtext', nullable: true })
+  documentOriginalNames?: string;
 }
