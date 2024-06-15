@@ -17,6 +17,7 @@ import { File } from '#src/core/files/entities/file.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Like } from 'typeorm';
 import { GetFileDto } from '#src/core/files/dto/get-file.dto';
+import { FileRdo } from '#src/core/files/rdo/file.rdo';
 
 @Controller('files')
 @ApiTags('Files')
@@ -43,8 +44,8 @@ export class FilesController {
   async getFiles(
     @Res({ passthrough: true }) res: Response,
     @Query() query: GetFileDto,
-  ): Promise<File[]> {
-    return await this.filesService.find({
+  ): Promise<FileRdo[]> {
+    const files = await this.filesService.find({
       where: {
         isDocument: query.isDocument,
         originalName:
@@ -53,6 +54,8 @@ export class FilesController {
             : undefined,
       },
     });
+
+    return files.map((file) => new FileRdo(file));
   }
 
   // @Get('instructions')
@@ -66,8 +69,10 @@ export class FilesController {
   async getFile(
     @Res({ passthrough: true }) res: Response,
     @Param('name') name: string,
-  ): Promise<File> {
-    return await this.filesService.findOne({ where: { name: name } });
+  ): Promise<FileRdo> {
+    return new FileRdo(
+      await this.filesService.findOne({ where: { name: name } }),
+    );
   }
 
   @Get('/source/:name')
