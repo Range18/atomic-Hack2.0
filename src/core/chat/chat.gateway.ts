@@ -11,9 +11,8 @@ import { Server, Socket } from 'socket.io';
 import { GetMessageRdo } from '#src/core/messages/rdo/get-message.rdo';
 import { IssuesService } from '#src/core/issues/issues.service';
 import * as console from 'node:console';
-import axios from 'axios';
-import { AILink } from '#src/common/configs/config';
 import { FilesService } from '#src/core/files/files.service';
+import { uid } from 'uid/secure';
 
 @WebSocketGateway({
   cors: {
@@ -35,11 +34,6 @@ export class ChatGateway {
 
   @WebSocketServer() server: Server;
 
-  private readonly httpClient = axios.create({
-    ...axios.defaults,
-    baseURL: AILink,
-  });
-
   @SubscribeMessage('sendMessage')
   async sendMessage(
     @ConnectedSocket() client: Socket,
@@ -52,13 +46,18 @@ export class ChatGateway {
 
     if (!issue) {
       issue = await this.issuesService.save({
-        issueId: data.issueId,
+        issueId: uid(16),
+        authorId: data.authorId,
+      });
+    } else if (issue.isClosed) {
+      issue = await this.issuesService.save({
+        issueId: uid(16),
         authorId: data.authorId,
       });
     }
 
     const message = await this.messageService.save({
-      issueId: data.issueId,
+      issueId: issue.issueId,
       text: data.text,
       authorId: data.authorId,
     });
@@ -97,7 +96,7 @@ export class ChatGateway {
       );
 
       const messageFromAI = await this.messageService.save({
-        issueId: data.issueId,
+        issueId: issue.issueId,
         text: isAnswer
           ? text
           : 'К сожалению, не могу ответить на ваш вопрос. Переключаю на оператора техподдержки.',
@@ -110,6 +109,7 @@ export class ChatGateway {
           isAnswer && withPageAndLink.length > 0
             ? withPageAndLink[0].filename
             : undefined,
+        isQuestion: false,
       });
 
       this.server

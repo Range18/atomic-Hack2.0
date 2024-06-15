@@ -16,6 +16,10 @@ export namespace AllExceptions {
     AlreadyExists = 'File already exists',
   }
 
+  export enum MessageExceptions {
+    NotFound = 'File is not found',
+  }
+
   export enum UserExceptions {
     UserNotFound = 'User is not found',
     UserAlreadyExists = 'User already exists',
