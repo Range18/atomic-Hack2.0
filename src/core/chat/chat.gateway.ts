@@ -12,7 +12,6 @@ import { GetMessageRdo } from '#src/core/messages/rdo/get-message.rdo';
 import { IssuesService } from '#src/core/issues/issues.service';
 import * as console from 'node:console';
 import { FilesService } from '#src/core/files/files.service';
-import { uid } from 'uid/secure';
 
 @WebSocketGateway({
   cors: {
@@ -46,12 +45,12 @@ export class ChatGateway {
 
     if (!issue) {
       issue = await this.issuesService.save({
-        issueId: uid(16),
+        issueId: data.issueId,
         authorId: data.authorId,
       });
     } else if (issue.isClosed) {
       issue = await this.issuesService.save({
-        issueId: uid(16),
+        issueId: data.issueId,
         authorId: data.authorId,
       });
     }
