@@ -68,6 +68,8 @@ export class FilesService extends BaseEntityService<File> {
       query: substring,
     });
 
+    console.log(res.data);
+
     return await Promise.all(
       res.data.map(async (instruction) => {
         const file = await this.findOne({
@@ -92,13 +94,13 @@ export class FilesService extends BaseEntityService<File> {
 
         process.on('spawn', () =>
           console.log(
-            `rga "${instruction.title.split(' ').slice(0, 3)}" ${join('/home/helper', storageConfig.path, file.name)}`,
+            `rga "${instruction.title.split(' ').slice(0, 5).join(' ')}" ${join('/home/helper', storageConfig.path, file.name)}`,
           ),
         );
         process.stdout.on('data', (message) => {
-          const match = String(message).match(regexToParsePageNumber);
+          const match = message.toString().match(regexToParsePageNumber);
           console.log(message);
-
+          console.log(message.toString());
           if (match) {
             page = Number(match[1]);
           }

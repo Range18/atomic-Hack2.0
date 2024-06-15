@@ -20,11 +20,12 @@ export class GetMessageRdo {
     this.id = message.id;
     this.issueId = message.issueId;
     this.text = message.text;
-    this.fileLink =
-      fileName || message.document
-        ? backendServer.urlValue +
-          `/files/source/${fileName ?? message.document}`
-        : undefined;
+
+    if (fileName) {
+      this.fileLink = backendServer.urlValue + `/files/source/${fileName}`;
+    } else if (message.document) {
+      this.fileLink = message.document;
+    }
     this.page = page ?? message.page;
     this.authorId = message.authorId;
     this.createdAt = message.createdAt;

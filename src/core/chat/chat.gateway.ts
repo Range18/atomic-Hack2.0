@@ -83,18 +83,26 @@ export class ChatGateway {
         message.text,
       );
 
+      console.log(answerFromAI);
+
+      const isAnswer = !answerFromAI.every(
+        (answer) => answer.text == 'Нет фрагмента.',
+      );
+
       const messageFromAI = await this.messageService.save({
         issueId: data.issueId,
-        text: `111 ${answerFromAI[0].text == 'Нет фрагмета' ? '' : answerFromAI[0].text}
-        \n
-        \n\n\n
-        222  ${answerFromAI[1].text == 'Нет фрагмета' ? '' : answerFromAI[0].text}
-        \n\n
-        \n
-        \n
-        333 ${answerFromAI[2].text == 'Нет фрагмета' ? '' : answerFromAI[0].text}
-         `,
+        text: isAnswer
+          ? `\t\t\t${answerFromAI[0].text == 'Нет фрагмента.' ? '' : answerFromAI[0].text}\n` +
+            '\n' +
+            +'\n' +
+            ` \t\t\t${answerFromAI[1].text == 'Нет фрагмента.' ? '' : answerFromAI[1].text}\n` +
+            '\n' +
+            +'\n' +
+            `\t\t\t${answerFromAI[2].text == 'Нет фрагмента. ' ? '' : answerFromAI[2].text}\n`
+          : 'К сожалению, не могу ответить на ваш вопрос. Переключаю на оператора.',
         authorId: '0',
+        page: answerFromAI[0].page,
+        document: answerFromAI[0].url,
       });
 
       this.server
