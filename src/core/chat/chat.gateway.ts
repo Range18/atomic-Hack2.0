@@ -41,7 +41,7 @@ export class ChatGateway {
   ): Promise<void> {
     let issue = await this.issuesService.findOne({
       where: { issueId: data.issueId },
-      relations: { messages: true },
+      relations: { messages: { issue: true } },
     });
 
     if (!issue) {
