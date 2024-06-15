@@ -55,7 +55,7 @@ export class FilesService extends BaseEntityService<File> {
     return { buffer: new StreamableFile(stream), mimetype: file.mimeType };
   }
 
-  async getInstructionsFromFiles(substring: string) {
+  async getInstructionsFromFiles(question: string) {
     const res = await this.httpClient.post<
       [
         {
@@ -65,7 +65,7 @@ export class FilesService extends BaseEntityService<File> {
         },
       ]
     >('/get_useful_instructions', {
-      query: substring,
+      query: question,
     });
 
     console.log(res.data);
@@ -84,30 +84,29 @@ export class FilesService extends BaseEntityService<File> {
           );
         }
 
+        //find page number in PDF instructions
         const regexToParsePageNumber = /Page (\d+):/;
-        let page = 0;
+        let page = null;
 
-        const process = child_process.spawn(
-          `rga "${instruction.title}" ${join('/home/helper', storageConfig.path, file.name)}`,
-          { shell: true },
-        );
+        const titleWords = instruction.title.split(' ');
+        const command = `rga "${titleWords.slice(0, titleWords.length < 5 ? titleWords.length : 5).join(' ')}" ${join('/home/helper', storageConfig.path, file.name)}`;
 
-        process.on('spawn', () =>
-          console.log(
-            `rga "${instruction.title.split(' ').slice(0, 5).join(' ')}" ${join('/home/helper', storageConfig.path, file.name)}`,
-          ),
-        );
+        const process = child_process.spawn(command, { shell: true });
+
+        process.on('spawn', () => console.log('spawned:', command));
+
         process.stdout.on('data', (message) => {
           const match = message.toString().match(regexToParsePageNumber);
-          console.log(message);
+
           console.log(message.toString());
+
           if (match) {
             page = Number(match[1]);
           }
         });
 
         process.on('error', (err) => {
-          console.log('Error while finding file page:', err);
+          console.log('Error during finding file page:', err);
         });
 
         await new Promise((resolve) => {

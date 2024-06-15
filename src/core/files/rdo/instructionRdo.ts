@@ -26,7 +26,7 @@ export class InstructionRdo {
     this.originalName = filename;
     this.filename = file.name;
     this.mimetype = file.mimeType;
-    this.url = backendServer.urlValue + `/files/source/${file.name}`;
+    this.url = backendServer.urlValue + `/files/look/${file.name}`;
     this.text = text;
     this.title = title;
     this.page = page;

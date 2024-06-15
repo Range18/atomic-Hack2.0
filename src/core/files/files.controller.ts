@@ -85,4 +85,16 @@ export class FilesController {
 
     return buffer;
   }
+
+  @Get('/look/:name')
+  async getFileWithoutDownloading(
+    @Res({ passthrough: true }) res: Response,
+    @Param('name') name: string,
+  ): Promise<StreamableFile> {
+    const { buffer } = await this.filesService.getFile(name);
+
+    res.setHeader('Content-Type', 'application/pdf');
+
+    return buffer;
+  }
 }

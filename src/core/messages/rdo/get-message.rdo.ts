@@ -22,7 +22,7 @@ export class GetMessageRdo {
     this.text = message.text;
 
     if (fileName) {
-      this.fileLink = backendServer.urlValue + `/files/source/${fileName}`;
+      this.fileLink = backendServer.urlValue + `/files/look/${fileName}`;
     } else if (message.document) {
       this.fileLink = message.document;
     }

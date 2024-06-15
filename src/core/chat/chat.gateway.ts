@@ -83,26 +83,33 @@ export class ChatGateway {
         message.text,
       );
 
-      console.log(answerFromAI);
+      const isAnswer = !answerFromAI.every((answer) =>
+        answer.text.toLowerCase().includes('нет фрагмента'),
+      );
 
-      const isAnswer = !answerFromAI.every(
-        (answer) => answer.text == 'Нет фрагмента.',
+      const withPageAndLink = answerFromAI.filter(
+        (answer) => !answer.text.toLowerCase().includes('нет фрагмента'),
+      );
+
+      const text = withPageAndLink.reduce(
+        (previousValue, currentValue) => previousValue + `${currentValue.text}`,
+        '',
       );
 
       const messageFromAI = await this.messageService.save({
         issueId: data.issueId,
         text: isAnswer
-          ? `\t\t\t${answerFromAI[0].text == 'Нет фрагмента.' ? '' : answerFromAI[0].text}\n` +
-            '\n' +
-            +'\n' +
-            ` \t\t\t${answerFromAI[1].text == 'Нет фрагмента.' ? '' : answerFromAI[1].text}\n` +
-            '\n' +
-            +'\n' +
-            `\t\t\t${answerFromAI[2].text == 'Нет фрагмента. ' ? '' : answerFromAI[2].text}\n`
-          : 'К сожалению, не могу ответить на ваш вопрос. Переключаю на оператора.',
+          ? text
+          : 'К сожалению, не могу ответить на ваш вопрос. Переключаю на оператора техподдержки.',
         authorId: '0',
-        page: answerFromAI[0].page,
-        document: answerFromAI[0].url,
+        page:
+          isAnswer && withPageAndLink.length > 0
+            ? withPageAndLink[0].page
+            : null,
+        document:
+          isAnswer && withPageAndLink.length > 0
+            ? withPageAndLink[0].filename
+            : undefined,
       });
 
       this.server
