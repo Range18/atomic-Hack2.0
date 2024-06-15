@@ -12,6 +12,7 @@ import { GetMessageRdo } from '#src/core/messages/rdo/get-message.rdo';
 import { IssuesService } from '#src/core/issues/issues.service';
 import * as console from 'node:console';
 import { FilesService } from '#src/core/files/files.service';
+import { MessageToAIDto } from '#src/core/messages/dto/message-to-AI.dto';
 
 @WebSocketGateway({
   cors: {
@@ -64,63 +65,62 @@ export class ChatGateway {
     client.to(data.authorId).emit('receiveMessage', new GetMessageRdo(message));
 
     if (data.isQuestion) {
-      // console.log(issue.messages);
-      // const issueMessages = issue.messages
-      //   ? issue.messages.concat(message)
-      //   : [message];
-      //
-      // const context = issueMessages.map(
-      //   (message) =>
-      //     new MessageToAIDto(
-      //       message.authorId == '0' ? 'assistant' : 'user',
-      //       message.text,
-      //     ),
-      // );
+      console.log(issue.messages);
+      const issueMessages =
+        issue.messages && issue.messages.length > 0
+          ? [...issue.messages, message]
+          : [message];
 
-      const answerFromAI = await this.fileService.getInstructionsFromFiles(
-        message.text,
+      const context = issueMessages.map(
+        (message) =>
+          new MessageToAIDto(
+            message.authorId == '0' ? 'assistant' : 'user',
+            message.text,
+          ),
       );
 
-      const isAnswer = !answerFromAI.every((answer) =>
+      const answerFromAI =
+        await this.fileService.getInstructionsFromFiles(context);
+
+      const isAnswer = !answerFromAI.instructions.every((answer) =>
         answer.text.toLowerCase().includes('нет фрагмента'),
       );
 
-      const withPageAndLink = answerFromAI.filter(
+      const withPageAndLink = answerFromAI.instructions.filter(
         (answer) => !answer.text.toLowerCase().includes('нет фрагмента'),
       );
 
-      const text = withPageAndLink.reduce(
-        (previousValue, currentValue) => previousValue + `${currentValue.text}`,
-        '',
-      );
+      // const text = withPageAndLink.reduce(
+      //   (previousValue, currentValue) => previousValue + `${currentValue.text}`,
+      //   '',
+      // );
 
       const messageFromAI = await this.messageService.save({
         issueId: issue.issueId,
         text: isAnswer
-          ? text
+          ? answerFromAI.answer
           : 'К сожалению, не могу ответить на ваш вопрос. Переключаю на оператора техподдержки.',
         authorId: '0',
         page:
           isAnswer && withPageAndLink.length > 0
-            ? withPageAndLink[0].page
+            ? withPageAndLink.map((msg) => msg.page).join('$')
             : null,
         document:
           isAnswer && withPageAndLink.length > 0
-            ? withPageAndLink[0].filename
+            ? withPageAndLink.map((msg) => msg.filename).join('$')
             : undefined,
         isQuestion: false,
       });
 
+      const msg = await this.messageService.findOne({
+        where: { id: messageFromAI.id },
+      });
+
+      console.log(msg);
+
       this.server
         .to(data.authorId)
-        .emit(
-          'receiveMessage',
-          new GetMessageRdo(
-            messageFromAI,
-            answerFromAI[0].filename,
-            answerFromAI[0].page,
-          ),
-        );
+        .emit('receiveMessage', new GetMessageRdo(msg));
     }
   }
 

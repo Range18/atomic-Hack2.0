@@ -13,6 +13,7 @@ import { AllExceptions } from '#src/common/exception-handler/exeption-types/all-
 import { InstructionRdo } from '#src/core/files/rdo/instructionRdo';
 import * as child_process from 'node:child_process';
 import * as console from 'node:console';
+import { MessageToAIDto } from '#src/core/messages/dto/message-to-AI.dto';
 import FileExceptions = AllExceptions.FileExceptions;
 
 @Injectable()
@@ -55,72 +56,75 @@ export class FilesService extends BaseEntityService<File> {
     return { buffer: new StreamableFile(stream), mimetype: file.mimeType };
   }
 
-  async getInstructionsFromFiles(question: string) {
-    const res = await this.httpClient.post<
-      [
+  async getInstructionsFromFiles(context: MessageToAIDto[]) {
+    const res = await this.httpClient.post<{
+      answer: string;
+      useful_instructions: [
         {
           filename: string;
           title: string;
+          modified_text: string;
           text: string;
         },
-      ]
-    >('/get_useful_instructions', {
-      query: question,
-    });
+      ];
+    }>('/chat', { messages: context });
 
     console.log(res.data);
 
-    return await Promise.all(
-      res.data.map(async (instruction) => {
-        const file = await this.findOne({
-          where: { originalName: instruction.filename },
-        });
+    return {
+      answer: res.data.answer,
+      instructions: await Promise.all(
+        res.data.useful_instructions.map(async (instruction) => {
+          const file = await this.findOne({
+            where: { originalName: instruction.filename },
+          });
 
-        if (!file) {
-          throw new ApiException(
-            HttpStatus.NOT_FOUND,
-            'FileExceptions',
-            FileExceptions.NotFound,
-          );
-        }
-
-        //find page number in PDF instructions
-        const regexToParsePageNumber = /Page (\d+):/;
-        let page = null;
-
-        const titleWords = instruction.title.split(' ');
-        const command = `rga "${titleWords.slice(0, titleWords.length < 5 ? titleWords.length : 5).join(' ')}" ${join('/home/helper', storageConfig.path, file.name)}`;
-
-        const process = child_process.spawn(command, { shell: true });
-
-        process.on('spawn', () => console.log('spawned:', command));
-
-        process.stdout.on('data', (message) => {
-          const match = message.toString().match(regexToParsePageNumber);
-
-          console.log(message.toString());
-
-          if (match) {
-            page = Number(match[1]);
+          if (!file) {
+            throw new ApiException(
+              HttpStatus.NOT_FOUND,
+              'FileExceptions',
+              FileExceptions.NotFound,
+            );
           }
-        });
 
-        process.on('error', (err) => {
-          console.log('Error during finding file page:', err);
-        });
+          //find page number in PDF instructions
+          const regexToParsePageNumber = /Page (\d+):/;
+          let page = null;
 
-        await new Promise((resolve) => {
-          process.on('exit', resolve);
-        });
+          const textWords = instruction.text.split(' ');
+          const command = `rga -U "(?s)${textWords.slice(0, textWords.length < 10 ? textWords.length : 10).join('.*')}" ${join('/home/helper', storageConfig.path, file.name)}`;
 
-        return new InstructionRdo(
-          instruction.filename,
-          instruction.title,
-          instruction.text,
-          file,
-          page,
-        );
-      }),
-    );
+          const process = child_process.spawn(command, { shell: true });
+
+          process.on('spawn', () => console.log('spawned:', command));
+
+          process.stdout.on('data', (message) => {
+            const match = message.toString().match(regexToParsePageNumber);
+
+            // console.log(message.toString());
+
+            if (match) {
+              page = Number(match[1]);
+            }
+          });
+
+          process.on('error', (err) => {
+            console.log('Error during finding file page:', err);
+          });
+
+          await new Promise((resolve) => {
+            process.on('exit', resolve);
+          });
+
+          return new InstructionRdo(
+            instruction.filename,
+            instruction.title,
+            instruction.modified_text,
+            file,
+            page,
+          );
+        }),
+      ),
+    };
   }
 }

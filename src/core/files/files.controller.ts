@@ -17,8 +17,6 @@ import { File } from '#src/core/files/entities/file.entity';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { Like } from 'typeorm';
 import { GetFileDto } from '#src/core/files/dto/get-file.dto';
-import { GetDocumentPartDto } from '#src/core/files/dto/get-document-part.dto';
-import { InstructionRdo } from '#src/core/files/rdo/instructionRdo';
 
 @Controller('files')
 @ApiTags('Files')
@@ -57,14 +55,12 @@ export class FilesController {
     });
   }
 
-  @Get('instructions')
-  @ApiQuery({ name: 'isDocument', type: Boolean })
-  @ApiQuery({ name: 'search', type: String })
-  async getInstructionsFromFiles(
-    @Query() query: GetDocumentPartDto,
-  ): Promise<InstructionRdo[]> {
-    return await this.filesService.getInstructionsFromFiles(query.question);
-  }
+  // @Get('instructions')
+  // @ApiQuery({ name: 'isDocument', type: Boolean })
+  // @ApiQuery({ name: 'search', type: String })
+  // async getInstructionsFromFiles(@Query() query: GetDocumentPartDto) {
+  //   return await this.filesService.getInstructionsFromFiles(query.question);
+  // }
 
   @Get(':name')
   async getFile(

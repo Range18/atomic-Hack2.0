@@ -30,7 +30,7 @@ export class Message extends BaseEntity {
   isQuestion: boolean;
 
   @Column({ nullable: true })
-  page?: number;
+  page?: string;
 
   @Column({ nullable: true })
   document?: string;
