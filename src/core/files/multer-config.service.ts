@@ -1,4 +1,4 @@
-import { HttpException, HttpStatus, Injectable } from '@nestjs/common';
+import { HttpStatus, Injectable } from '@nestjs/common';
 import {
   MulterModuleOptions,
   MulterOptionsFactory,
@@ -8,6 +8,9 @@ import { Request } from 'express';
 import { storageConfig } from '#src/common/configs/storage.config';
 import { extname } from 'path';
 import { uid } from 'uid/secure';
+import { ApiException } from '#src/common/exception-handler/api-exception';
+import { AllExceptions } from '#src/common/exception-handler/exeption-types/all-exceptions';
+import FileExceptions = AllExceptions.FileExceptions;
 
 @Injectable()
 export class MulterConfigService implements MulterOptionsFactory {
@@ -20,7 +23,11 @@ export class MulterConfigService implements MulterOptionsFactory {
           // }
 
           if (!file) {
-            throw new HttpException('No File', HttpStatus.NOT_FOUND);
+            throw new ApiException(
+              HttpStatus.NOT_FOUND,
+              'FileExceptions',
+              FileExceptions.NotFound,
+            );
           }
 
           return callback(null, storageConfig.path);
