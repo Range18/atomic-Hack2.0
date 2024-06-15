@@ -23,8 +23,8 @@ export class Message extends BaseEntity {
     nullable: false,
     onDelete: 'CASCADE',
   })
-  @JoinColumn({ name: 'issueId' })
-  issueId: string;
+  @JoinColumn({ name: 'issue' })
+  issue: Issue;
 
   @Column({ nullable: false, default: false })
   isQuestion: boolean;

@@ -26,7 +26,7 @@ export class IssuesController {
     return new GetIssueRdo(
       await this.issuesService.findOne({
         where: { issueId: issue.issueId },
-        relations: { messages: true },
+        relations: { messages: { issue: true } },
       }),
     );
   }
@@ -36,7 +36,7 @@ export class IssuesController {
   async findAll(@Query('authorId') authorId: string): Promise<GetIssueRdo[]> {
     const issues = await this.issuesService.find({
       where: { authorId: authorId },
-      relations: { messages: true },
+      relations: { messages: { issue: true } },
       order: { createdAt: 'ASC', messages: { createdAt: 'ASC' } },
     });
 
@@ -48,7 +48,7 @@ export class IssuesController {
     return new GetIssueRdo(
       await this.issuesService.findOne({
         where: { issueId: id },
-        relations: { messages: true },
+        relations: { messages: { issue: true } },
       }),
     );
   }
@@ -66,7 +66,7 @@ export class IssuesController {
     return new GetIssueRdo(
       await this.issuesService.findOne({
         where: { issueId: id },
-        relations: { messages: true },
+        relations: { messages: { issue: true } },
       }),
     );
   }

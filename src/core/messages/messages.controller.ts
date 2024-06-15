@@ -19,7 +19,10 @@ export class MessagesController {
 
   @Post()
   async create(@Body() createMessageDto: CreateMessageDto) {
-    return await this.messagesService.save(createMessageDto);
+    return await this.messagesService.save({
+      ...createMessageDto,
+      issue: { issueId: createMessageDto.issueId },
+    });
   }
 
   @ApiQuery({ name: 'authorId', type: String })
@@ -29,6 +32,7 @@ export class MessagesController {
   ): Promise<GetMessageRdo[]> {
     const messages = await this.messagesService.find({
       where: { authorId: authorId },
+      relations: { issue: true },
     });
 
     return messages.map((message) => new GetMessageRdo(message));
@@ -37,7 +41,10 @@ export class MessagesController {
   @Get(':id')
   async findOne(@Param('id') id: string) {
     return new GetMessageRdo(
-      await this.messagesService.findOne({ where: { id: id } }),
+      await this.messagesService.findOne({
+        where: { id: id },
+        relations: { issue: true },
+      }),
     );
   }
 

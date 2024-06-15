@@ -57,7 +57,7 @@ export class ChatGateway {
     }
 
     const message = await this.messageService.save({
-      issueId: issue.issueId,
+      issue: { issueId: issue.issueId },
       text: data.text,
       authorId: data.authorId,
     });
@@ -102,7 +102,7 @@ export class ChatGateway {
       // );
 
       const messageFromAI = await this.messageService.save({
-        issueId: issue.issueId,
+        issue: { issueId: issue.issueId },
         text: isAnswer
           ? answerFromAI.answer
           : 'К сожалению, не могу ответить на ваш вопрос. Переключаю на оператора техподдержки.',
@@ -124,6 +124,7 @@ export class ChatGateway {
 
       const msg = await this.messageService.findOne({
         where: { id: messageFromAI.id },
+        relations: { issue: true },
       });
 
       console.log(msg);

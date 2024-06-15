@@ -18,7 +18,7 @@ export class GetMessageRdo {
 
   constructor(message: Message, instrustions?: InstructionRdo[]) {
     this.id = message.id;
-    this.issueId = message.issueId;
+    this.issueId = message.issue ? message.issue.issueId : undefined;
     this.text = message.text;
 
     this.documents = [];

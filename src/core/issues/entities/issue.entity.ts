@@ -13,6 +13,6 @@ export class Issue extends BaseEntity {
   @Column({ nullable: false, default: false })
   isClosed: boolean;
 
-  @OneToMany(() => Message, (message) => message.issueId, { nullable: true })
+  @OneToMany(() => Message, (message) => message.issue, { nullable: true })
   messages?: Message[];
 }
