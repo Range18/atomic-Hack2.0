@@ -119,7 +119,7 @@ export class FilesService extends BaseEntityService<File> {
           //find page number in title of PDF instructions
           if (!page) {
             const titleWords = instruction.title.split(' ');
-            const command = `rga -U "(?s)${titleWords.slice(0, titleWords.length < 10 ? titleWords.length : 10).join('.*')}" ${join('/home/helper', storageConfig.path, file.name)}`;
+            const command = `rga "${titleWords.slice(0, titleWords.length < 5 ? titleWords.length : 5).join(' ')}" ${join('/home/helper', storageConfig.path, file.name)}`;
 
             const process = child_process.spawn(command, { shell: true });
 
