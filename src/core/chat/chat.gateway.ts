@@ -85,7 +85,7 @@ export class ChatGateway {
       }, 0);
 
       const answerFromAI = await this.fileService.getInstructionsFromFiles(
-        sendLastOrContext > 1 ? [context.at(-1)] : context,
+        sendLastOrContext > 1 ? [context[context.length - 1]] : context,
       );
 
       const isAnswer = !answerFromAI.instructions.every((answer) =>
