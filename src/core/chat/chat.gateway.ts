@@ -103,9 +103,7 @@ export class ChatGateway {
 
       const messageFromAI = await this.messageService.save({
         issue: { issueId: issue.issueId },
-        text: isAnswer
-          ? answerFromAI.answer
-          : 'К сожалению, не могу ответить на ваш вопрос. Переключаю на оператора техподдержки.',
+        text: answerFromAI.answer,
         authorId: '0',
         page:
           isAnswer && withPageAndLink.length > 0
